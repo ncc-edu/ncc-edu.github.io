@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #0a0a1a;
+    width: 680px;
+    margin: 0 auto;
+    min-height: 880px;
+    position: relative;
+  }
+  .page { position: relative; padding-left: 0px; background: #fff; }
+  .page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 0px; height: 100%;
+    background: #8B0000;
+    z-index: 0;
+  }
+  #neuralCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .header {
+    background: #8B0000;
+    border-bottom: 2px solid #8B0000;
+    padding: 28px 40px 22px 46px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+  }
+  .college-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .circuit { position: absolute; right: 0; top: 0; opacity: 0.12; }
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight:  1000;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #f5c842;
+    margin-bottom: 6px;
+  }
+  .title-minor {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 2px;
+  }
+  .tagline {
+    margin-top:  6px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.88);
+    font-style: italic;
+    letter-spacing: 0.3px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 44px;
+    line-height: 0.95;
+    letter-spacing: 1px;
+    color: #ffffff;
+    white-space: nowrap;
+  }
+  h1 span { color: #ffffff; }
+  .body { padding: 22px 40px 0 46px; position: relative; z-index: 1; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pill {
+    border: 1px solid rgba(200,16,46,0.35);
+    border-radius: 2px;
+    padding: 4px 12px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    color: #C8102E;
+    background: rgba(255,255,255,0.85);
+  }
+  .desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #333;
+    font-weight: 300;
+    margin-bottom: 20px;
+    border-left: 3px solid #C8102E;
+    padding-left: 14px;
+    max-width: 560px;
+  }
+  .desc strong { color: #0a0a1a; font-weight: 500; }
+  .two-col { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight:  700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #C8102E;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .course-list { display: flex; flex-direction: column; gap: 2px; }
+  .course-card {
+    background: rgba(247,244,244,0.92);
+    padding: 10px 14px;
+    border-left: 3px solid transparent;
+  }
+  .course-card.required { border-left-color: ; }
+  .course-card.elective { border-left-color: ; background: rgba(253,249,238,0.92); }
+  .course-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #C8102E;
+    margin-bottom: 2px;
+  }
+  .course-card.elective .course-code { color: #b8860b; }
+  .course-name { font-size: 12px; font-weight: 500; color: #0a0a1a; line-height: 1.3; }
+  .course-cr { font-size: 11px; color: #888; font-family: 'Space Mono', monospace; margin-top: 2px; }
+  .course-cr strong {color: #8B0000; }
+  .stat-stack { display: flex; flex-direction: column; gap: 2px; }
+  .stat-item {
+    background-color: #f5c842;
+    padding: 11px 14px;
+    border-left: 3px solid #eee;
+  }
+  .stat-copy strong { display: block; font-size: 12px; font-weight: 500; color: #0a0a1a; margin-bottom: 2px; }
+  .stat-copy span { font-size: 12px; color: #777; font-weight: 300; line-height: 1.4; }
+  .elective-options {
+    margin-top: 10px;
+    background: rgba(253,249,238,0.92);
+    border-left: 3px solid #d4a017;
+    padding: 10px 14px;
+  }
+  .elective-options-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #b8860b;
+    margin-bottom: 8px;
+  }
+  .elective-track-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: #0a0a1a;
+    margin-bottom: 3px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+  .elective-course-item {
+    font-size: 11px;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.6;
+    padding-left: 8px;
+  }
+  .elective-track + .elective-track { margin-top: 7px; }
+  .footer {
+    background: #C8102E;
+    padding: 14px 20px 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .footer-logo { flex-shrink: 0; }
+  .footer-logo svg { width: 140px; height: auto; display: block; }
+  .footer-mid {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.8;
+    text-align: center;
+  }
+  .footer-mid a { color: #f5c842; text-decoration: none; }
+  .footer-right {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight:  700;
+    color: rgba(255,255,255,0.7);
+    text-align: right;
+    line-height: 1.8;
+  }
+  .footer-right a { color: #000000; text-decoration: none; }
+  @media print {
+    body { width: 100%; margin: 0; }
+    .header, .footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+
+
+<div class="page" id="page">
+
+  <canvas id="neuralCanvas"></canvas>
+
+  <div class="header">
+    <svg class="circuit" width="200" height="160" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+      <line x1="40" y1="20" x2="160" y2="20" stroke="white" stroke-width="1.5"/>
+      <line x1="160" y1="20" x2="160" y2="80" stroke="white" stroke-width="1.5"/>
+      <line x1="80" y1="20" x2="80" y2="60" stroke="white" stroke-width="1.5"/>
+      <line x1="80" y1="60" x2="130" y2="60" stroke="white" stroke-width="1.5"/>
+      <line x1="130" y1="60" x2="130" y2="100" stroke="white" stroke-width="1.5"/>
+      <line x1="40" y1="100" x2="160" y2="100" stroke="white" stroke-width="1.5"/>
+      <line x1="40" y1="100" x2="40" y2="140" stroke="white" stroke-width="1.5"/>
+      <circle cx="80" cy="20" r="4" fill="white"/>
+      <circle cx="160" cy="20" r="4" fill="white"/>
+      <circle cx="130" cy="60" r="4" fill="white"/>
+      <circle cx="160" cy="100" r="4" fill="white"/>
+      <circle cx="40" cy="100" r="4" fill="white"/>
+      <rect x="148" y="68" width="24" height="24" rx="4" fill="none" stroke="white" stroke-width="1.5"/>
+      <rect x="28" y="128" width="24" height="24" rx="4" fill="none" stroke="white" stroke-width="1.5"/>
+    </svg>
+    <div class="eyebrow">Undergraduate Minor</div>    
+    <h1><span>Applied Artificial Intelligence</span></h1>
+    <div class="tagline">Learn AI technical skills &nbsp;·&nbsp; For All Majors &nbsp;·&nbsp; Use your creativity and innovate</div>
+  </div>
+
+  <div class="body">
+    
+    <p class="desc">
+      Whatever your major, AI will be part of your career. <strong>Gain a competitive edge with a minor designed to help you integrate AI into your specific field to solve real-world problems.</strong> Designed for students from all majors, not just STEM.
+      <br><br>
+      The Applied AI minor equips students from all disciplines to build and integrate AI into professional workflows. Through hands-on coursework, you will master technical skills that go far beyond basic prompt engineering. Use your creativity to build a high-impact portfolio.
+    </p>
+    <div class="two-col">
+      <div>
+        <div class="section-label">Courses</div>
+        <div class="course-list">
+          <div class="course-card required">
+            <div class="course-code">INFS 100</div>
+            <div class="course-name">Digital Well-being</div>
+            <div class="course-cr">2 cr <br> <strong>Meets General Education Well-Being requirement</strong></div>
+          </div>
+          <div class="course-card required">
+            <div class="course-code">CSCE 160</div>
+            <div class="course-name">Intro to Computer Programming</div>
+            <div class="course-cr">4 cr</div>
+          </div>
+          <div class="course-card required">
+            <div class="course-code">CSCE 210</div>
+            <div class="course-name">Data Structures</div>
+            <div class="course-cr">4 cr</div>
+          </div>
+          <div class="course-card required">
+            <div class="course-code">CSCE 280</div>
+            <div class="course-name">Fundamentals of Modern AI</div>
+            <div class="course-cr">4 cr</div>
+          </div>
+          <div class="course-card required">
+            <div class="course-code">CSCE 394</div>
+            <div class="course-name">Applied AI Capstone</div>
+            <div class="course-cr">4 cr</div>
+          </div>
+          <div class="course-card elective">
+            <div class="course-code">Elective</div>
+            <div class="course-name">Entrepreneurship <span style="color:#aaa;font-weight:300">or</span> Advanced AI</div>
+            <div class="course-cr">2 or 4 cr · Choose one course &rarr;</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">What You'll Gain</div>
+        <div class="stat-stack">
+          <div class="stat-item">
+            <div class="stat-copy">
+              <strong>Essential Computing Skills</strong>
+              <span>From programming foundations to modern AI systems</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-copy">
+              <strong>AI Fundamentals &amp; Integration</strong>
+              <span>Understand and deploy real AI tools and models</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-copy">
+              <strong>Capstone Project</strong>
+              <span>Solve problems in your own discipline</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-copy">
+              <strong>Innovate &amp; Create</strong>
+              <span>Build a portfolio and imagine a new path forward</span>
+            </div>
+          </div>
+        </div>
+        <div class="elective-options">
+          <div class="elective-options-label">Elective Options</div>
+          <div class="elective-track">
+            <div class="elective-track-title">Choose one:</div>
+            <div class="elective-course-item">BUSN 170 Entrepreneurship Exploration</div>
+            <div class="elective-course-item">BUSN 370 Entrepreneurship Experimentation</div>
+            <div class="elective-course-item">BUSN 380 Applied Entrepreneurship</div>
+            <div class="elective-course-item">CSCE 464 Data Mining &amp; Machine Learning</div>
+            <div class="elective-course-item">CSCE 480 Classical Artificial Intelligence</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-logo">
+      <svg width="282" height="74" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2" viewBox="0 0 282 74"><path d="M0 0h282v74H0z" style="fill:none"/><path d="M94.858 59.029h2.025l4.259 6.622v-6.622h1.807v9.719h-1.866l-4.398-6.83v6.83h-1.827zM108.002 59.029h1.847l3.673 9.719h-1.926l-.635-1.767h-4.06l-.635 1.767h-1.926l3.673-9.719zm-.477 6.244h2.809l-1.4-3.862-1.41 3.862ZM114.902 59.029h3.842c2.184 0 3.643 1.569 3.643 3.524s-1.469 3.544-3.663 3.544h-1.936v2.651h-1.886zm1.906 1.717v3.604h1.827c1.122 0 1.866-.754 1.866-1.797s-.745-1.807-1.866-1.807zM124.214 59.029h6.542v1.767H126.1v2.184h4.656v1.767H126.1v2.214h4.656v1.787h-6.542zM132.702 59.029h3.951c2.234 0 3.564 1.439 3.564 3.286 0 1.221-.625 2.333-1.708 2.879l1.916 3.554h-2.105l-1.559-3.058h-2.184v3.058h-1.876v-9.719Zm1.886 1.737v3.207h1.916c1.241 0 1.807-.774 1.807-1.638 0-.963-.616-1.569-1.807-1.569zM141.12 59.029h1.986l2.611 7.217 2.641-7.217h1.966l-3.673 9.719h-1.847l-3.673-9.719zM151.772 59.029h1.906v9.719h-1.906zM155.813 59.029h1.886v7.892h4.487v1.827h-6.373zM163.944 59.029h1.886v7.892h4.487v1.827h-6.373zM172.084 59.029h6.542v1.767h-4.656v2.184h4.656v1.767h-4.656v2.214h4.656v1.787h-6.542zM180.582 62.424c.774-.576 1.162-1.082 1.241-1.668-.119.228-.328.347-.625.347-.546 0-.933-.427-.933-.983 0-.715.506-1.201 1.211-1.201.864 0 1.35.655 1.35 1.479 0 1.082-.665 1.916-1.648 2.641l-.586-.616zM183.769 66.892l1.638-1.301c.635 1.013 1.509 1.529 2.661 1.529 1.052 0 1.598-.506 1.598-1.211 0-.903-.933-1.092-2.273-1.4-1.449-.308-3.078-.774-3.078-2.74 0-1.598 1.43-2.879 3.445-2.879 1.717 0 2.8.596 3.782 1.688l-1.529 1.201c-.506-.745-1.162-1.211-2.273-1.211-1.052 0-1.509.516-1.509 1.162 0 .784.973.933 2.184 1.211 1.489.318 3.207.794 3.207 2.899 0 1.668-1.4 3.048-3.564 3.048s-3.365-.824-4.289-1.995ZM196.744 65.006V59.03h1.916v6.016c0 1.201.774 2.025 1.916 2.025s1.936-.824 1.936-2.025V59.03h1.916v5.976c0 2.422-1.549 3.872-3.852 3.872s-3.832-1.449-3.832-3.872M206.444 59.029h2.025l4.259 6.622v-6.622h1.807v9.719h-1.866l-4.398-6.83v6.83h-1.827zM216.669 59.029h1.906v9.719h-1.906zM220.024 59.029h1.986l2.611 7.217 2.641-7.217h1.966l-3.673 9.719h-1.847l-3.673-9.719zM230.607 59.029h6.542v1.767h-4.656v2.184h4.656v1.767h-4.656v2.214h4.656v1.787h-6.542zM239.085 59.029h3.951c2.234 0 3.564 1.439 3.564 3.286 0 1.221-.625 2.333-1.708 2.879l1.916 3.554h-2.105l-1.559-3.058h-2.184v3.058h-1.876v-9.719Zm1.896 1.737v3.207h1.916c1.241 0 1.807-.774 1.807-1.638 0-.963-.616-1.569-1.807-1.569zM247.653 66.892l1.638-1.301c.635 1.013 1.509 1.529 2.661 1.529 1.052 0 1.598-.506 1.598-1.211 0-.903-.933-1.092-2.273-1.4-1.449-.308-3.078-.774-3.078-2.74 0-1.598 1.43-2.879 3.445-2.879 1.717 0 2.8.596 3.782 1.688l-1.529 1.201c-.506-.745-1.162-1.211-2.273-1.211-1.052 0-1.509.516-1.509 1.162 0 .784.973.933 2.184 1.211 1.489.318 3.207.794 3.207 2.899 0 1.668-1.4 3.048-3.564 3.048s-3.365-.824-4.289-1.995ZM257.283 59.029h1.906v9.719h-1.906zM263.735 60.767h-2.7V59.04h7.227v1.727h-2.68v7.992h-1.847zM272.71 64.648l-3.306-5.619h2.065l2.194 3.862 2.194-3.862h2.055l-3.316 5.659v4.06h-1.886zM95.622 5.331h3.266l6.929 10.761V5.331h2.948v15.805h-3.028l-7.148-11.109v11.109h-2.968V5.331ZM111.139 13.224c0-4.477 3.594-8.121 8.071-8.121s8.121 3.633 8.121 8.121a8.093 8.093 0 0 1-8.121 8.121c-4.527 0-8.071-3.633-8.071-8.121m13.114 0c0-2.809-2.184-5.133-5.043-5.133s-5.003 2.313-5.003 5.133 2.164 5.113 5.003 5.113 5.043-2.313 5.043-5.113M129.684 5.331h6.403c3.633 0 5.798 2.333 5.798 5.351 0 1.995-1.013 3.792-2.77 4.676l3.117 5.778h-3.415l-2.532-4.974h-3.554v4.974h-3.048V5.331Zm3.058 2.809v5.212h3.117c2.015 0 2.948-1.251 2.948-2.661 0-1.559-.993-2.551-2.948-2.551zM147.672 8.141h-4.398V5.332h11.754v2.809h-4.348v12.985h-3.008zM166.852 14.673h-6.383v6.453h-3.078V5.321h3.078v6.364h6.383V5.321h3.048v15.805h-3.048zM177.346 13.224c0-4.606 3.504-8.121 8.091-8.121 3.028 0 5.609 1.578 7.009 3.941l-2.68 1.688c-.844-1.628-2.333-2.641-4.309-2.641-2.899 0-5.023 2.273-5.023 5.133s2.105 5.083 4.984 5.083c2.164 0 3.703-1.211 4.477-2.919l2.79 1.489c-1.34 2.641-3.941 4.457-7.247 4.457-4.765 0-8.091-3.633-8.091-8.121v.01ZM194.689 5.331h10.632V8.21h-7.575v3.554h7.575v2.879h-7.575v3.594h7.575v2.899h-10.632zM207.953 5.331h3.266l6.929 10.761V5.331h2.948v15.805h-3.028l-7.148-11.109v11.109h-2.968zM227.847 8.141h-4.398V5.332h11.754v2.809h-4.348v12.985h-3.008zM237.566 5.331h6.403c3.633 0 5.798 2.333 5.798 5.351 0 1.995-1.013 3.792-2.77 4.676l3.117 5.778h-3.415l-2.532-4.974h-3.554v4.974h-3.048V5.331Zm3.048 2.809v5.212h3.117c2.015 0 2.948-1.251 2.948-2.661 0-1.559-.993-2.551-2.948-2.551zM256.975 5.331h3.008l5.976 15.805h-3.137l-1.042-2.879h-6.602l-1.042 2.879h-3.137zm-.774 10.146h4.567l-2.273-6.274zM267.667 5.331h3.078v12.836h7.297v2.968h-10.364V5.33h-.01ZM95.235 37.149c0-4.606 3.504-8.121 8.091-8.121 3.028 0 5.609 1.578 7.009 3.941l-2.68 1.688c-.844-1.628-2.333-2.641-4.309-2.641-2.899 0-5.023 2.273-5.023 5.133s2.095 5.083 4.974 5.083c2.164 0 3.703-1.211 4.477-2.919l2.79 1.489c-1.34 2.641-3.941 4.457-7.247 4.457-4.765 0-8.091-3.633-8.091-8.121l.01.01ZM111.705 37.149c0-4.477 3.594-8.121 8.071-8.121s8.121 3.633 8.121 8.121a8.093 8.093 0 0 1-8.121 8.121c-4.527 0-8.071-3.633-8.071-8.121m13.114 0c0-2.809-2.184-5.133-5.043-5.133s-5.003 2.313-5.003 5.133 2.164 5.113 5.003 5.113 5.043-2.313 5.043-5.113M130.25 29.247h3.078v12.836h7.297v2.968h-10.364V29.246h-.01ZM142.937 29.247h3.078v12.836h7.297v2.968h-10.364V29.246h-.01ZM155.614 29.247h10.632v2.879h-7.575v3.554h7.575v2.879h-7.575v3.594h7.575v2.899h-10.632zM168.391 37.149c0-4.547 3.395-8.121 8.16-8.121 2.988 0 5.262 1.281 6.751 3.286l-2.571 1.797c-.913-1.39-2.343-2.184-4.18-2.184-2.919 0-5.113 2.313-5.113 5.212s2.144 5.172 5.152 5.172c2.402 0 3.981-1.34 4.507-3.415h-5.023v-2.859h8.309v1.32c0 4.219-3.008 7.902-7.753 7.902s-8.25-3.723-8.25-8.121l.01.01ZM186.747 29.247h10.632v2.879h-7.575v3.554h7.575v2.879h-7.575v3.594h7.575v2.899h-10.632zM208.856 45.18V32.522c-.496 1.211-1.757 2.015-3.584 2.015h-.238V32.71h.129c2.561 0 3.693-1.37 3.713-3.385h1.777v15.844h-1.797zM213.77 40.683c0-1.737 1.023-3.127 2.671-3.911-1.281-.735-2.045-1.936-2.045-3.425 0-2.492 1.956-4.229 5.103-4.229s5.142 1.737 5.142 4.229c0 1.519-.824 2.69-2.124 3.405 1.648.804 2.69 2.194 2.69 3.931 0 2.819-2.105 4.706-5.708 4.706s-5.728-1.886-5.728-4.706Zm9.699 0c0-1.668-1.459-3.078-3.971-3.078s-3.991 1.37-3.991 3.078 1.43 3.078 3.991 3.078 3.971-1.32 3.971-3.078m-.496-7.336c0-1.539-1.211-2.671-3.455-2.671s-3.475 1.152-3.475 2.671 1.211 2.69 3.455 2.69 3.475-1.152 3.475-2.69M229.237 43.403c-.973-1.241-1.519-2.8-1.519-5.559 0-5.579 3.038-8.726 7.724-8.726 1.003 0 1.936.149 2.581.367l-.675 1.717a5.7 5.7 0 0 0-1.995-.387c-3.534 0-5.688 2.174-5.907 6.314.824-1.628 2.492-2.581 4.428-2.581 2.968 0 5.252 2.234 5.252 5.43 0 2.998-2.323 5.43-5.579 5.43-1.668 0-3.236-.625-4.318-1.995l.01-.01Zm8.121-3.435c0-2.234-1.559-3.802-3.772-3.802s-3.822 1.608-3.822 3.772 1.648 3.753 3.802 3.753 3.802-1.608 3.802-3.733zM244.099 45.18V32.522c-.496 1.211-1.757 2.015-3.584 2.015h-.238V32.71h.129c2.561 0 3.693-1.37 3.713-3.385h1.777v15.844h-1.797zM95.235 52.239h182.806v.874H95.235zM36.96 53.4a2.195 2.195 0 0 0-2.194 2.194l-.02 15.159h4.348l.06-15.159A2.195 2.195 0 0 0 36.96 53.4M29.296 53.4a2.195 2.195 0 0 0-2.194 2.194l-.02 15.159h4.348l.06-15.159a2.195 2.195 0 0 0-2.194-2.194M44.575 53.4a2.195 2.195 0 0 0-2.194 2.194l-.02 15.159h4.348l.06-15.159a2.195 2.195 0 0 0-2.194-2.194" style="fill:#fff;fill-rule:nonzero"/><path d="m37.338 0 1.092 6.79h-.735V8.1h-1.36V6.79h-.774L36.683 0H.001v74H20.65V50.591h32.642V74h20.709V0H37.339Zm1.817 21.046c.159 2.492.516 6.403 1.082 8.309a7 7 0 0 1-.506-.367c-.735-.546-1.499-1.112-2.79-1.112-1.43 0-2.263.635-3.078 1.251l-.248.189c.596-2.025.963-6.096 1.092-8.776 0-.089.01-.189.01-.278h-.884c0 .397-.02.794-.05 1.201h-.754l-.893-2.77h9.719l-.774 2.76h-1.013c-.03-.397-.05-.804-.05-1.201h-.884c0 .258.02.516.03.784zm-5.093-4.507c.655-.417 1.38-1.33 1.717-2.412a2.59 2.59 0 0 1-1.36-2.273 2.593 2.593 0 0 1 2.591-2.591 2.593 2.593 0 0 1 2.591 2.591 2.57 2.57 0 0 1-1.449 2.313c.338 1.052 1.062 1.956 1.698 2.373h1.995v.884h-9.719v-.884h1.936Zm19.627 32.592H20.243l-.606-1.827h34.657l-.606 1.827Zm3.048.804h-1.608l1.36-4.17h-3.107v-1.201h-2.78v1.181H48.17v-1.181h-2.541v1.181h-2.432v-1.181h-2.541v1.181h-2.432v-1.181h-2.541v1.181h-2.432v-1.181H30.71v1.181h-2.432v-1.181h-2.541v1.181h-2.432v-1.181h-2.68v1.201h-3.107l1.36 4.17H17.21l-2.492-7.068h44.495l-2.492 7.068h.02Zm2.561-8.607H14.703v-.516c5.192-.109 9.342-.933 12.509-2.77.288-1.162-.486-1.886-1.539-1.886l-.377-.893h5.182v-1.291h-5.46l-.149-.923h5.599v-1.301c3.862 0 4.08-2.532 6.532-2.532 2.214 0 2.641 2.393 6.503 2.393v1.439H49.4l-.149.923h-5.748v1.291h5.48l-.377.893c-1.112 0-1.916.794-1.499 2.065 3.117 1.708 7.168 2.492 12.191 2.591v.516Z" style="fill:#fff;fill-rule:nonzero"/><path d="M36.97 31.212a2.304 2.304 0 0 0-2.303 2.303l.02 6.373h4.567l.02-6.373a2.304 2.304 0 0 0-2.303-2.303ZM279.461 59.377h-.427v-.278h1.152v.278h-.427v1.271h-.298zM280.414 59.099h.288l.457.635.477-.635h.278v1.549h-.288v-1.082l-.467.625-.447-.616v1.072h-.298z" style="fill:#fff;fill-rule:nonzero"/></svg>
+    </div>
+    <div class="footer-mid">
+      <br>
+      <img src="assets/qrcode_ncc-edu.github.io.png" alt="qrcode_ncc-edu">
+    </div>
+    <div class="footer-right">
+      Questions? Talk to your student success coach<br>
+      or contact Prof. Kim at <a href="mailto:skim@noctrl.edu">skim@noctrl.edu</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const canvas = document.getElementById('neuralCanvas');
+const ctx = canvas.getContext('2d');
+const page = document.getElementById('page');
+function resize() {
+  canvas.width = page.offsetWidth;
+  canvas.height = page.offsetHeight;
+}
+resize();
+const NODE_COUNT = 48;
+const nodes = [];
+for (let i = 0; i < NODE_COUNT; i++) {
+  nodes.push({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.00025,
+    vy: (Math.random() - 0.5) * 0.00025,
+    r: Math.random() * 2 + 1.5,
+    pulse: Math.random() * Math.PI * 2,
+    pulseSpeed: 0.012 + Math.random() * 0.018,
+  });
+}
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  nodes.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x < 0 || n.x > 1) n.vx *= -1;
+    if (n.y < 0 || n.y > 1) n.vy *= -1;
+    n.pulse += n.pulseSpeed;
+  });
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      const dx = (a.x - b.x) * W, dy = (a.y - b.y) * H;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 140) {
+        ctx.beginPath();
+        ctx.moveTo(a.x*W, a.y*H);
+        ctx.lineTo(b.x*W, b.y*H);
+        ctx.strokeStyle = `rgba(200,16,46,${(1 - dist/140)*0.12})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+  }
+  nodes.forEach(n => {
+    const pulse = 0.5 + 0.5 * Math.sin(n.pulse);
+    ctx.beginPath();
+    ctx.arc(n.x*canvas.width, n.y*canvas.height, n.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(200,16,46,${0.18 + pulse*0.22})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', resize);
+draw();
+</script>
+</body>
+</html>
